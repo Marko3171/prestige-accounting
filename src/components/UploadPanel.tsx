@@ -1,4 +1,5 @@
 ﻿"use client";
+// UTF-8
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -231,4 +232,6 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
     </section>
   );
 }
+
+
 
