@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -154,7 +154,7 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
                     {upload.originalName}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    {upload.bankName ? `${upload.bankName} � ` : ""}
+                    {upload.bankName ? `${upload.bankName} · ` : ""}
                     {new Date(upload.createdAt).toLocaleString()}
                   </p>
                 </div>
@@ -231,3 +231,4 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
     </section>
   );
 }
+
