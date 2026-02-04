@@ -1,12 +1,15 @@
 # Prestige Accounting Portal
 
+[![CI](https://github.com/Marko3171/prestige-accounting/actions/workflows/ci.yml/badge.svg)](https://github.com/Marko3171/prestige-accounting/actions/workflows/ci.yml)
+
 A secure client and admin portal for uploading South African bank statements and converting PDF/CSV files into a universal CSV format.
 
 ## Setup
 
 1. Create a Neon Postgres database and copy the connection string.
-2. Update `.env` with your connection string and a secure `AUTH_SECRET`.
-3. (Optional) Set `ADMIN_EMAILS` to a comma-separated list of admin accounts.
+2. Create a `.env` file using `.env.example` as a starting point.
+3. Update `.env` with your connection string and a secure `AUTH_SECRET`.
+4. (Optional) Set `ADMIN_EMAILS` to a comma-separated list of admin accounts.
 
 ```bash
 npm install
