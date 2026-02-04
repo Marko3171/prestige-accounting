@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum UploadStatus {
+  UPLOADED
+  CONVERTED
+  FAILED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(CLIENT)
+  createdAt    DateTime  @default(now())
+  profile      Profile?
+  uploads      Upload[]
+}
+
+model Profile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  businessName       String
+  taxNumber          String
+  vatNumber          String?
+  registrationNumber String?
+  contactName        String?
+  phone              String?
+  address            String?
+  createdAt          DateTime @default(now())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Upload {
+  id               String       @id @default(cuid())
+  userId           String
+  originalName     String
+  storedPath       String
+  storedMime       String
+  size             Int
+  bankName         String?
+  status           UploadStatus @default(UPLOADED)
+  convertedPath    String?
+  convertedMime    String?
+  warnings         String?
+  qaReport         Json?
+  previewPath      String?
+  previewMime      String?
+  transactions     Int?
+  pageCount        Int?
+  createdAt        DateTime     @default(now())
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

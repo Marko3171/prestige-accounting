@@ -1,0 +1,24 @@
+{
+  "landing": {
+    "companyName": "Prestige Accounting",
+    "logoSize": 160,
+    "showLogin": true,
+    "showSignup": true,
+    "sectionsOrder": ["logo", "login", "signup"],
+    "layout": "two-column"
+  },
+  "client": {
+    "title": "Client Portal",
+    "subtitle": "Upload statements and track conversions.",
+    "showQa": true,
+    "showPreview": true,
+    "sectionsOrder": ["header", "uploads"]
+  },
+  "admin": {
+    "title": "Admin overview",
+    "subtitle": "Review clients and convert statements.",
+    "showQa": true,
+    "showPreview": true,
+    "sectionsOrder": ["header", "clients"]
+  }
+}

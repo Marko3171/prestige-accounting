@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricThin.otf") format("opentype");
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricExtraLight.otf") format("opentype");
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricLight.otf") format("opentype");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricRegular.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricMedium.otf") format("opentype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricSemiBold.otf") format("opentype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricBold.otf") format("opentype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricExtraBold.otf") format("opentype");
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "URW Geometric";
+  src: url("/fonts/URWGeometricBlack.otf") format("opentype");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+
+:root {
+  --bg: #0b0c0f;
+  --bg-soft: #101218;
+  --text: #f7f7f5;
+  --muted: #a7a8ad;
+  --accent: #f2c14e;
+  --accent-strong: #f7d87c;
+  --panel: #14161d;
+  --line: #242733;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --font-sans: "URW Geometric", "URW Geometric W01", "URW Geometric W03",
+    system-ui, sans-serif;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 15% -10%, #1a1d27 0%, #0b0c0f 55%),
+    radial-gradient(900px 500px at 110% 10%, #1b1a14 0%, #0b0c0f 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+.bg-grid {
+  background-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
