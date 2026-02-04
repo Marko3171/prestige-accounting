@@ -28,3 +28,17 @@ npm run dev
 ## Admin Access
 
 Create an account using an email in `ADMIN_EMAILS` to access the admin dashboard.
+
+## Deployment (Vercel)
+
+1. Push the repo to GitHub (already done for this project).
+2. In Vercel, click **New Project** and import `Marko3171/prestige-accounting`.
+3. Set the environment variables:
+   - `DATABASE_URL`
+   - `AUTH_SECRET`
+   - `ADMIN_EMAILS` (optional)
+4. Deploy.
+
+Notes:
+- The build runs `npm run db:generate` automatically via the `build` script.
+- File storage under `storage/` and `data/` is local-only. For production, consider moving uploads to a hosted bucket (e.g., S3) and update the storage layer accordingly.

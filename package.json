@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:clean": "powershell -NoProfile -Command \"if (Test-Path .next/dev/lock) { Remove-Item .next/dev/lock -Force }; Remove-Item .next -Recurse -Force -ErrorAction SilentlyContinue\"",
     "dev:restart": "npm run dev:clean && npm run dev",
-    "build": "next build",
+    "build": "npm run db:generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
