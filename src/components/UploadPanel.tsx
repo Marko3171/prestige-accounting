@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 // UTF-8
 
 import { useRouter } from "next/navigation";
@@ -155,7 +155,7 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
                     {upload.originalName}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    {upload.bankName ? `${upload.bankName} · ` : ""}
+                    {upload.bankName ? `${upload.bankName} - ` : ""}
                     {new Date(upload.createdAt).toLocaleString()}
                   </p>
                 </div>
