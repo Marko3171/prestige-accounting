@@ -51,7 +51,6 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [bankName, setBankName] = useState("");
   const [status, setStatus] = useState<string | null>(null);
-  const [converting, setConverting] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
@@ -89,17 +88,6 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
     } finally {
       setUploading(false);
     }
-  }
-
-  async function handleConvert(uploadId: string) {
-    setConverting(uploadId);
-    const res = await fetch(`/api/convert/${uploadId}`, { method: "POST" });
-    const data = await res.json();
-    if (!res.ok) {
-      setStatus(data?.error ?? "Conversion failed.");
-    }
-    setConverting(null);
-    startTransition(() => router.refresh());
   }
 
   return (
@@ -190,17 +178,6 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
                   <span className="rounded-full border border-[color:var(--line)] px-3 py-1">
                     {upload.status}
                   </span>
-                  {upload.status === "UPLOADED" &&
-                  upload.originalName.toLowerCase().endsWith(".pdf") ? (
-                    <button
-                      type="button"
-                      onClick={() => handleConvert(upload.id)}
-                      disabled={converting === upload.id}
-                      className="rounded-full bg-[color:var(--accent)] px-3 py-1 text-xs font-semibold text-black"
-                    >
-                      {converting === upload.id ? "Converting..." : "Convert PDF to CSV"}
-                    </button>
-                  ) : null}
                   {upload.status === "CONVERTED" ? (
                     <a
                       href={`/api/download/${upload.id}`}
