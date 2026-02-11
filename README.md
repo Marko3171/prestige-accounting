@@ -72,6 +72,8 @@ Expected JSON response:
 - `previewBase64` (string, optional)
 - `previewMime` (string, optional)
 
+A ready-to-deploy worker scaffold is included in `conversion-service/`.
+
 ### Post-Deploy Smoke Check
 
 Run after deployment:
