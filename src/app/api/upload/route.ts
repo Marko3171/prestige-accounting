@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs/promises";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { ensureStorage, uploadsDir, convertedDir } from "@/lib/storage";
+import { storeBinary } from "@/lib/storage";
 import { convertCsvToUniversal } from "@/lib/conversion/convertCsv";
 
 export const runtime = "nodejs";
@@ -30,11 +28,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Only PDF or CSV files are allowed." }, { status: 400 });
   }
 
-  await ensureStorage();
-  const storedName = `${crypto.randomUUID()}-${file.name}`;
-  const storedPath = path.join(uploadsDir, storedName);
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(storedPath, buffer);
+  const storedPath = await storeBinary("uploads", file.name, buffer, mime);
 
   const upload = await prisma.upload.create({
     data: {
@@ -49,8 +44,12 @@ export async function POST(request: Request) {
 
   if (isCsv) {
     const converted = convertCsvToUniversal(buffer.toString("utf-8"));
-    const convertedPath = path.join(convertedDir, `${upload.id}.csv`);
-    await fs.writeFile(convertedPath, converted.csv);
+    const convertedPath = await storeBinary(
+      "converted",
+      `${upload.id}.csv`,
+      Buffer.from(converted.csv, "utf-8"),
+      "text/csv"
+    );
     await prisma.upload.update({
       where: { id: upload.id },
       data: {

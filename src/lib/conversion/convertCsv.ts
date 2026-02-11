@@ -49,7 +49,10 @@ function parseAmount(value?: string) {
 
 export function convertCsvToUniversal(csvText: string): ConversionResult & { csv: string } {
   const warnings: string[] = [];
-  const records = parse(csvText, { columns: true, skip_empty_lines: true });
+  const records = parse(csvText, {
+    columns: true,
+    skip_empty_lines: true,
+  }) as Array<Record<string, string>>;
   if (!records.length) {
     return {
       csv: "",

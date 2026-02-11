@@ -37,8 +37,45 @@ Create an account using an email in `ADMIN_EMAILS` to access the admin dashboard
    - `DATABASE_URL`
    - `AUTH_SECRET`
    - `ADMIN_EMAILS` (optional)
+   - `BLOB_READ_WRITE_TOKEN` (required on Vercel for durable file storage)
+   - `CONVERSION_SERVICE_URL` (required on Vercel for PDF conversion)
+   - `CONVERSION_SERVICE_TOKEN` (optional bearer token for conversion service auth)
 4. Deploy.
+5. Run database migrations against production once:
+
+```bash
+npx prisma migrate deploy
+```
 
 Notes:
 - The build runs `npm run db:generate` automatically via the `build` script.
-- File storage under `storage/` and `data/` is local-only. For production, consider moving uploads to a hosted bucket (e.g., S3) and update the storage layer accordingly.
+- The app automatically uses Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set, and local `storage/` when it is not set.
+- Vercel Blob SDK server uploads currently require `access: public`; file names are randomized, but treat Blob URLs as sensitive.
+- PDF conversion depends on `pdftoppm`, `pdftotext`, and `tesseract` binaries. These are not available by default in Vercel serverless functions, so set `CONVERSION_SERVICE_URL` to an external worker/service that exposes `POST /convert-pdf`.
+
+### Conversion Service Contract
+
+`POST {CONVERSION_SERVICE_URL}/convert-pdf` with `multipart/form-data`:
+- `file` (PDF file)
+- `uploadId` (string)
+- `bankName` (optional string)
+
+If `CONVERSION_SERVICE_TOKEN` is set, this app sends:
+- `Authorization: Bearer {CONVERSION_SERVICE_TOKEN}`
+
+Expected JSON response:
+- `csv` (string, required)
+- `warnings` (string[], optional)
+- `qaReport` (object, required)
+- `transactions` (number, optional)
+- `pageCount` (number, optional)
+- `previewBase64` (string, optional)
+- `previewMime` (string, optional)
+
+### Post-Deploy Smoke Check
+
+Run after deployment:
+
+```bash
+npm run smoke:deploy -- https://your-app.vercel.app
+```

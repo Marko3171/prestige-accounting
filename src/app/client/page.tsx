@@ -1,7 +1,32 @@
 import UploadPanel from "@/components/UploadPanel";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { getEditorConfig } from "@/lib/editor";
 import { requireSession } from "@/lib/session";
+
+type QaReport = {
+  method: "pdftotext" | "ocr" | "csv";
+  pageCount?: number;
+  totalLines?: number;
+  matchedLines?: number;
+  unmatchedLines?: number;
+  transactions: number;
+  debitTotal: number;
+  creditTotal: number;
+  balanceCount: number;
+  sampleUnmatched?: string[];
+  reconciliationNote?: string;
+};
+
+function isQaReport(value: Prisma.JsonValue | null): value is QaReport {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  const method = record.method;
+  return method === "pdftotext" || method === "ocr" || method === "csv";
+}
 
 export default async function ClientPage() {
   const session = await requireSession();
@@ -34,7 +59,7 @@ export default async function ClientPage() {
     warnings: upload.warnings ?? null,
     bankName: upload.bankName ?? null,
     storedMime: upload.storedMime,
-    qaReport: upload.qaReport ?? null,
+    qaReport: isQaReport(upload.qaReport) ? upload.qaReport : null,
     previewPath: upload.previewPath ?? null,
   }));
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 
 const initialSignup = {
   email: "",
@@ -222,7 +222,7 @@ export default function AuthPanel({ config }: Props) {
     </form>
   ) : null;
 
-  const sectionMap: Record<string, JSX.Element | null> = {
+  const sectionMap: Record<string, ReactElement | null> = {
     logo: logoBlock,
     login: loginForm,
     signup: signupForm,

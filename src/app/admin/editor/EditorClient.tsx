@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -99,7 +99,7 @@ export default function EditorClient() {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
-      const order =
+      const order: string[] =
         section === "landing"
           ? [...config.landing.sectionsOrder]
           : section === "client"
@@ -110,9 +110,34 @@ export default function EditorClient() {
       const newIndex = order.indexOf(over.id as string);
       const nextOrder = arrayMove(order, oldIndex, newIndex);
 
+      if (section === "landing") {
+        setConfig({
+          ...config,
+          landing: {
+            ...config.landing,
+            sectionsOrder: nextOrder as EditorConfig["landing"]["sectionsOrder"],
+          },
+        });
+        return;
+      }
+
+      if (section === "client") {
+        setConfig({
+          ...config,
+          client: {
+            ...config.client,
+            sectionsOrder: nextOrder as EditorConfig["client"]["sectionsOrder"],
+          },
+        });
+        return;
+      }
+
       setConfig({
         ...config,
-        [section]: { ...(config as any)[section], sectionsOrder: nextOrder },
+        admin: {
+          ...config.admin,
+          sectionsOrder: nextOrder as EditorConfig["admin"]["sectionsOrder"],
+        },
       });
     };
   }

@@ -7,7 +7,7 @@ const execFileAsync = promisify(execFile);
 export async function runCommand(
   command: string,
   args: string[],
-  options?: { cwd?: string; env?: NodeJS.ProcessEnv }
+  options?: { cwd?: string; env?: Partial<NodeJS.ProcessEnv> }
 ) {
   const mergedEnv = options?.env ? { ...process.env, ...options.env } : { ...process.env };
   const userProfile = mergedEnv.USERPROFILE ?? process.env.USERPROFILE ?? "";

@@ -152,7 +152,7 @@ export function extractTransactionsFromText(
         warnings.push("Year missing or unclear; assumed current year.");
       }
 
-      let afterDate = line.slice(dateMatch.index! + dateMatch[0].length).trim();
+      const afterDate = line.slice(dateMatch.index! + dateMatch[0].length).trim();
       let amounts = extractAmounts(afterDate);
       let descriptionSource = afterDate;
 

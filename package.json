@@ -9,6 +9,7 @@
     "build": "npm run db:generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "smoke:deploy": "node scripts/postdeploy-smoke-check.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev"
   },
@@ -20,6 +21,7 @@
     "@prisma/adapter-neon": "^7.3.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@vercel/blob": "^2.2.0",
     "bcryptjs": "^3.0.3",
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",

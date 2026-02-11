@@ -3,9 +3,24 @@ import path from "path";
 import { ensureStorage, previewsDir, tempDir } from "../storage";
 import { runCommand } from "../process";
 import { extractTransactionsFromText, transactionsToCsv } from "./normalize";
+import type { QaReport } from "./types";
 
 const DEFAULT_DPI = 300;
 const BATCH_SIZE = 10;
+
+type AggregateQa = {
+  method: QaReport["method"];
+  pageCount: number;
+  totalLines: number;
+  matchedLines: number;
+  unmatchedLines: number;
+  transactions: number;
+  debitTotal: number;
+  creditTotal: number;
+  balanceCount: number;
+  sampleUnmatched: string[];
+  reconciliationNote?: string;
+};
 
 async function getPageCount(pdfPath: string) {
   const { stdout } = await runCommand("pdfinfo", [pdfPath]);
@@ -58,7 +73,7 @@ export async function convertPdfToCsv(
     : pageCount;
   const pageLabelWidth = String(pageCount).length;
 
-  let aggregateQa = {
+  let aggregateQa: AggregateQa = {
     method: "ocr" as const,
     pageCount,
     totalLines: 0,
@@ -82,9 +97,19 @@ export async function convertPdfToCsv(
 
   if (directResult.transactions.length >= 5) {
     transactions.push(...directResult.transactions);
+    const qa = directResult.qaReport;
     aggregateQa = {
-      ...directResult.qaReport,
+      method: qa.method,
       pageCount,
+      totalLines: qa.totalLines ?? 0,
+      matchedLines: qa.matchedLines ?? 0,
+      unmatchedLines: qa.unmatchedLines ?? 0,
+      transactions: qa.transactions,
+      debitTotal: qa.debitTotal,
+      creditTotal: qa.creditTotal,
+      balanceCount: qa.balanceCount,
+      sampleUnmatched: qa.sampleUnmatched ?? [],
+      reconciliationNote: qa.reconciliationNote,
     };
     warnings.push(...directResult.warnings);
   } else {

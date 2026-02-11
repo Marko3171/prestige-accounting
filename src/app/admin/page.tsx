@@ -2,6 +2,35 @@ import AdminClientList from "@/components/AdminClientList";
 import { prisma } from "@/lib/db";
 import { getEditorConfig } from "@/lib/editor";
 import { requireSession } from "@/lib/session";
+import type { Prisma } from "@/generated/prisma/client";
+
+type ClientWithProfileAndUploads = Prisma.UserGetPayload<{
+  include: { profile: true; uploads: true };
+}>;
+
+type QaReport = {
+  method: "pdftotext" | "ocr" | "csv";
+  pageCount?: number;
+  totalLines?: number;
+  matchedLines?: number;
+  unmatchedLines?: number;
+  transactions: number;
+  debitTotal: number;
+  creditTotal: number;
+  balanceCount: number;
+  sampleUnmatched?: string[];
+  reconciliationNote?: string;
+};
+
+function isQaReport(value: Prisma.JsonValue | null): value is QaReport {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  const method = record.method;
+  return method === "pdftotext" || method === "ocr" || method === "csv";
+}
 
 export default async function AdminPage() {
   const session = await requireSession();
@@ -18,14 +47,22 @@ export default async function AdminPage() {
 
   const config = await getEditorConfig();
 
-  const clients = await prisma.user.findMany({
-    where: { role: "CLIENT" },
-    include: {
-      profile: true,
-      uploads: { orderBy: { createdAt: "desc" } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  let dbUnavailableMessage: string | null = null;
+  let clients: ClientWithProfileAndUploads[] = [];
+
+  try {
+    clients = await prisma.user.findMany({
+      where: { role: "CLIENT" },
+      include: {
+        profile: true,
+        uploads: { orderBy: { createdAt: "desc" } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    dbUnavailableMessage =
+      "Database unavailable. Admin tools are shown, but client records could not be loaded.";
+  }
 
   const clientList = clients.map((client) => ({
     id: client.id,
@@ -49,7 +86,7 @@ export default async function AdminPage() {
       createdAt: upload.createdAt.toISOString(),
       bankName: upload.bankName,
       warnings: upload.warnings,
-      qaReport: upload.qaReport ?? null,
+      qaReport: isQaReport(upload.qaReport) ? upload.qaReport : null,
       previewPath: upload.previewPath ?? null,
     })),
   }));
@@ -58,6 +95,11 @@ export default async function AdminPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-12">
+      {dbUnavailableMessage ? (
+        <div className="mb-6 rounded-xl border border-[color:var(--accent)]/50 bg-[color:var(--panel)] px-4 py-3 text-sm text-[color:var(--accent)]">
+          {dbUnavailableMessage}
+        </div>
+      ) : null}
       {sections.map((section) => {
         if (section === "header") {
           return (
