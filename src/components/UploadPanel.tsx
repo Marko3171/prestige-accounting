@@ -2,7 +2,7 @@
 // UTF-8
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 
 type QaReport = {
   method: "pdftotext" | "ocr" | "csv";
@@ -47,10 +47,12 @@ function formatMoney(value: number) {
 export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [bankName, setBankName] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [converting, setConverting] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,15 +68,27 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
     }
 
     setStatus(null);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-    if (!res.ok) {
-      setStatus(data?.error ?? "Upload failed.");
-      return;
+    setUploading(true);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setStatus(data?.error ?? "Upload failed.");
+        return;
+      }
+
+      setStatus("File uploaded successfully.");
+      setFile(null);
+      setBankName("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      startTransition(() => router.refresh());
+    } catch (error) {
+      setStatus("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
     }
-    setFile(null);
-    setBankName("");
-    startTransition(() => router.refresh());
   }
 
   async function handleConvert(uploadId: string) {
@@ -103,22 +117,35 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
           </div>
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || uploading}
             className="rounded-full bg-[color:var(--accent)] px-6 py-2 text-sm font-semibold text-black transition hover:bg-[color:var(--accent-strong)] disabled:opacity-60"
           >
-            {pending ? "Uploading..." : "Upload"}
+            {uploading ? "Uploading..." : "Upload"}
           </button>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-[1.5fr_1fr]">
           <label className="block text-sm">
             Statement file
             <input
+              ref={fileInputRef}
+              id="statement-file-input"
               type="file"
               required
               accept=".pdf,.csv"
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-              className="mt-2 w-full rounded-xl border border-[color:var(--line)] bg-transparent px-4 py-3 text-sm text-white"
+              className="hidden"
             />
+            <div className="mt-2 flex items-center gap-3">
+              <label
+                htmlFor="statement-file-input"
+                className="cursor-pointer rounded-full border border-[color:var(--line)] px-4 py-2 text-xs text-[color:var(--muted)] hover:border-[color:var(--accent)]"
+              >
+                {file ? "Change file" : "Choose file"}
+              </label>
+              <span className="text-xs text-[color:var(--muted)]">
+                {file ? file.name : "No file selected"}
+              </span>
+            </div>
           </label>
           <label className="block text-sm">
             Bank name (optional)
