@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type ReactElement } from "react";
+import { useMemo, useState } from "react";
 
 const initialSignup = {
   email: "",
@@ -29,17 +29,21 @@ type Props = {
 };
 
 export default function AuthPanel({ config }: Props) {
+  const defaultMode: "login" | "signup" = config.showLogin ? "login" : "signup";
   const router = useRouter();
+  const [mode, setMode] = useState<"login" | "signup">(defaultMode);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signup, setSignup] = useState(initialSignup);
-  const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loginStatus, setLoginStatus] = useState<string | null>(null);
+  const [signupStatus, setSignupStatus] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
 
   async function onLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus(null);
-    setLoading(true);
+    setLoginStatus(null);
+    setLoginLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -48,21 +52,21 @@ export default function AuthPanel({ config }: Props) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setStatus(data?.error ?? "Login failed.");
+        setLoginStatus(data?.error ?? "Login failed.");
         return;
       }
       router.push(data.role === "ADMIN" ? "/admin" : "/client");
     } catch (error) {
-      setStatus("Could not log in. Please try again.");
+      setLoginStatus("Could not log in. Please try again.");
     } finally {
-      setLoading(false);
+      setLoginLoading(false);
     }
   }
 
   async function onSignup(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus(null);
-    setLoading(true);
+    setSignupStatus(null);
+    setSignupLoading(true);
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
@@ -71,14 +75,14 @@ export default function AuthPanel({ config }: Props) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setStatus(data?.error ?? "Sign up failed.");
+        setSignupStatus(data?.error ?? "Sign up failed.");
         return;
       }
       router.push(data.role === "ADMIN" ? "/admin" : "/client");
     } catch (error) {
-      setStatus("Could not sign up. Please try again.");
+      setSignupStatus("Could not sign up. Please try again.");
     } finally {
-      setLoading(false);
+      setSignupLoading(false);
     }
   }
 
@@ -131,13 +135,13 @@ export default function AuthPanel({ config }: Props) {
       </div>
       <button
         type="submit"
-        disabled={loading}
+        disabled={loginLoading}
         className="mt-6 w-full rounded-full bg-[color:var(--accent)] px-6 py-3 text-sm font-semibold text-black transition hover:bg-[color:var(--accent-strong)] disabled:opacity-60"
       >
-        {loading ? "Signing in..." : "Sign in"}
+        {loginLoading ? "Signing in..." : "Sign in"}
       </button>
-      {status ? (
-        <p className="mt-4 text-sm text-[color:var(--accent)]">{status}</p>
+      {loginStatus ? (
+        <p className="mt-4 text-sm text-[color:var(--accent)]">{loginStatus}</p>
       ) : null}
     </form>
   ) : null;
@@ -214,36 +218,63 @@ export default function AuthPanel({ config }: Props) {
       </div>
       <button
         type="submit"
-        disabled={loading}
+        disabled={signupLoading}
         className="mt-6 w-full rounded-full border border-[color:var(--accent)] px-6 py-3 text-sm font-semibold text-[color:var(--accent)] transition hover:bg-[color:var(--accent)] hover:text-black disabled:opacity-60"
       >
-        {loading ? "Creating profile..." : "Create profile"}
+        {signupLoading ? "Creating profile..." : "Create profile"}
       </button>
+      {signupStatus ? (
+        <p className="mt-4 text-sm text-[color:var(--accent)]">{signupStatus}</p>
+      ) : null}
     </form>
   ) : null;
-
-  const sectionMap: Record<string, ReactElement | null> = {
-    logo: logoBlock,
-    login: loginForm,
-    signup: signupForm,
-  };
 
   return (
     <section className="relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-16">
       <div className="absolute left-6 top-8 h-40 w-40 rounded-full bg-[radial-gradient(circle_at_center,rgba(242,193,78,0.35),transparent_70%)] blur-2xl" />
       {orderedSections.includes("logo") ? logoBlock : null}
-      <div
-        className={
-          config.layout === "two-column"
-            ? "grid gap-6 lg:grid-cols-2"
-            : "grid gap-6"
-        }
-      >
-        {orderedSections
-          .filter((section) => section !== "logo")
-          .map((section) => (
-            <div key={section}>{sectionMap[section]}</div>
-          ))}
+      <div className="mx-auto w-full max-w-3xl">
+        {config.showLogin && config.showSignup ? (
+          <div className="mb-4 flex gap-2 rounded-full border border-[color:var(--line)] bg-black/30 p-1">
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className={`flex-1 rounded-full px-4 py-2 text-sm ${
+                mode === "login"
+                  ? "bg-[color:var(--accent)] font-semibold text-black"
+                  : "text-[color:var(--muted)]"
+              }`}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className={`flex-1 rounded-full px-4 py-2 text-sm ${
+                mode === "signup"
+                  ? "bg-[color:var(--accent)] font-semibold text-black"
+                  : "text-[color:var(--muted)]"
+              }`}
+            >
+              Sign up
+            </button>
+          </div>
+        ) : null}
+
+        {mode === "login" ? loginForm : signupForm}
+
+        {config.showLogin && config.showSignup ? (
+          <p className="mt-4 text-center text-sm text-[color:var(--muted)]">
+            {mode === "login" ? "No account yet?" : "Already created a profile?"}{" "}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "login" ? "signup" : "login")}
+              className="text-[color:var(--accent)]"
+            >
+              {mode === "login" ? "Create profile" : "Log in"}
+            </button>
+          </p>
+        ) : null}
       </div>
     </section>
   );
