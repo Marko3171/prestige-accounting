@@ -52,6 +52,7 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
   const [bankName, setBankName] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -88,6 +89,23 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
     } finally {
       setUploading(false);
     }
+  }
+
+  async function handleRemove(uploadId: string) {
+    const confirmed = window.confirm("Remove this upload permanently?");
+    if (!confirmed) return;
+
+    setStatus(null);
+    setRemoving(uploadId);
+    const res = await fetch(`/api/upload/${uploadId}`, { method: "DELETE" });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      setStatus(data?.error ?? "Could not remove upload.");
+      setRemoving(null);
+      return;
+    }
+    setRemoving(null);
+    startTransition(() => router.refresh());
   }
 
   return (
@@ -186,6 +204,14 @@ export default function UploadPanel({ uploads, showQa, showPreview }: Props) {
                       Download CSV
                     </a>
                   ) : null}
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(upload.id)}
+                    disabled={removing === upload.id}
+                    className="rounded-full border border-[color:var(--line)] px-3 py-1 text-xs text-[color:var(--muted)] hover:border-[color:var(--accent)] disabled:opacity-60"
+                  >
+                    {removing === upload.id ? "Removing..." : "Remove"}
+                  </button>
                 </div>
               </div>
               {showQa && upload.qaReport ? (

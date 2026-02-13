@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type QaReport = {
@@ -63,18 +64,48 @@ export default function AdminClientList({
   showQa,
   showPreview,
 }: Props) {
+  const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(null);
   const [converting, setConverting] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   async function handleConvert(uploadId: string) {
+    setStatus(null);
     setConverting(uploadId);
-    await fetch(`/api/convert/${uploadId}`, { method: "POST" });
+    const res = await fetch(`/api/convert/${uploadId}`, { method: "POST" });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      setStatus(data?.error ?? "Conversion failed.");
+      setConverting(null);
+      return;
+    }
     setConverting(null);
-    window.location.reload();
+    router.refresh();
+  }
+
+  async function handleRemove(uploadId: string) {
+    const confirmed = window.confirm("Remove this upload permanently?");
+    if (!confirmed) return;
+
+    setStatus(null);
+    setRemoving(uploadId);
+    const res = await fetch(`/api/upload/${uploadId}`, { method: "DELETE" });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      setStatus(data?.error ?? "Could not remove upload.");
+      setRemoving(null);
+      return;
+    }
+    setRemoving(null);
+    router.refresh();
   }
 
   return (
     <div className="space-y-4">
+      {status ? (
+        <p className="text-sm text-[color:var(--accent)]">{status}</p>
+      ) : null}
       {clients.map((client) => {
         const isOpen = openId === client.id;
         return (
@@ -92,7 +123,7 @@ export default function AdminClientList({
                   {client.profile?.businessName ?? "Unnamed business"}
                 </p>
                 <p className="text-xs text-[color:var(--muted)]">
-                  {client.email} · {client.profile?.taxNumber ?? "Tax number pending"}
+                  {client.email} - {client.profile?.taxNumber ?? "Tax number pending"}
                 </p>
               </div>
               <span className="text-xs text-[color:var(--accent)]">
@@ -104,7 +135,7 @@ export default function AdminClientList({
               <div className="border-t border-[color:var(--line)] px-5 py-4">
                 <div className="grid gap-2 text-xs text-[color:var(--muted)] sm:grid-cols-2">
                   <p>
-                    Contact: {client.profile?.contactName ?? "-"} · {client.profile?.phone ?? "-"}
+                    Contact: {client.profile?.contactName ?? "-"} - {client.profile?.phone ?? "-"}
                   </p>
                   <p>Address: {client.profile?.address ?? "-"}</p>
                   <p>VAT: {client.profile?.vatNumber ?? "-"}</p>
@@ -120,7 +151,7 @@ export default function AdminClientList({
                         <div>
                           <p className="text-sm text-white">{upload.originalName}</p>
                           <p className="text-xs text-[color:var(--muted)]">
-                            {upload.bankName ? `${upload.bankName} · ` : ""}
+                            {upload.bankName ? `${upload.bankName} - ` : ""}
                             {new Date(upload.createdAt).toLocaleString()}
                           </p>
                         </div>
@@ -149,6 +180,14 @@ export default function AdminClientList({
                               Download CSV
                             </a>
                           ) : null}
+                          <button
+                            type="button"
+                            onClick={() => handleRemove(upload.id)}
+                            disabled={removing === upload.id}
+                            className="rounded-full border border-[color:var(--line)] px-3 py-1 text-xs text-[color:var(--muted)] hover:border-[color:var(--accent)] disabled:opacity-60"
+                          >
+                            {removing === upload.id ? "Removing..." : "Remove"}
+                          </button>
                         </div>
                       </div>
                       {showQa && upload.qaReport ? (
@@ -212,4 +251,3 @@ export default function AdminClientList({
     </div>
   );
 }
-
